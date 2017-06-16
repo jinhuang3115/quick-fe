@@ -93,4 +93,4 @@ Temporary Items
 
 .gitignore
 .idea/
-static/sass/
+/build/
