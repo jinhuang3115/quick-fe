@@ -12,6 +12,7 @@ const revReplace = require("gulp-rev-replace");
 const concat = require('gulp-concat');
 const override=require('gulp-rev-css-url');
 const RevAll = require('gulp-rev-all');
+const autoprefixer = require('gulp-autoprefixer');
 const clean = require('gulp-clean');
 const babel = require('gulp-babel');
 const rev = require('gulp-rev');
@@ -80,6 +81,7 @@ gulp.task('js-build', function () {
 gulp.task('sass', function () {
     return gulp.src('./static/sass/main.scss')
         .pipe(sass().on('error', sass.logError))
+        .pipe(autoprefixer())
         .pipe(gulp.dest('./build/css'))
         .pipe(browserSync.reload({stream: true}));
 });
@@ -87,6 +89,7 @@ gulp.task('sass', function () {
 gulp.task('sass-build', function () {
     return gulp.src('./static/sass/main.scss')
         .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
+        .pipe(autoprefixer())
         .pipe(RevAll.revision({
         }))
         .pipe(gulp.dest('./build/css'))
