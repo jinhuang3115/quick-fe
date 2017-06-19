@@ -20,5 +20,11 @@
     "jquery": "^3.2.1",
     "pug-html-loader": "^1.1.5",
     "run-sequence": "^1.2.2"
-  }
+  },
+  "name": "quick-fe",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/jinhuang3115/quick-fe.git",
+  "author": "jin.huang <jin.huang@mullenloweprofero.com>",
+  "license": "MIT"
 }
