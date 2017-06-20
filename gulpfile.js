@@ -10,12 +10,9 @@ const sass = require('gulp-sass');
 const uglify = require('gulp-uglify');
 const revReplace = require("gulp-rev-replace");
 const concat = require('gulp-concat');
-const override=require('gulp-rev-style-url');
-const RevAll = require('gulp-rev-all');
 const autoprefixer = require('gulp-autoprefixer');
 const clean = require('gulp-clean');
 const babel = require('gulp-babel');
-const revUrls = require('gulp-rev-urls');
 const rev = require('gulp-rev');
 const imagemin = require('gulp-imagemin');
 const runSequence = require('run-sequence');
@@ -88,7 +85,9 @@ gulp.task('js-build', function () {
 gulp.task('sass', function () {
     return gulp.src('./static/sass/main.scss')
         .pipe(sass().on('error', sass.logError))
-        .pipe(autoprefixer())
+        .pipe(autoprefixer({
+            remove:true
+        }))
         .pipe(gulp.dest('./build/css'))
         .pipe(browserSync.reload({stream: true}));
 });
@@ -97,6 +96,9 @@ gulp.task('sass-build', function () {
     var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/sass/main.scss')
         .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
+        .pipe(autoprefixer({
+            remove:true
+        }))
         .pipe(revReplace({
             manifest: manifest
         }))
