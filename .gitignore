@@ -94,3 +94,5 @@ Temporary Items
 .gitignore
 .idea/
 /build/
+/rev-manifest.json
+rev-manifest.json
