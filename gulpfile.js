@@ -10,11 +10,12 @@ const sass = require('gulp-sass');
 const uglify = require('gulp-uglify');
 const revReplace = require("gulp-rev-replace");
 const concat = require('gulp-concat');
-const override=require('gulp-rev-css-url');
+const override=require('gulp-rev-style-url');
 const RevAll = require('gulp-rev-all');
 const autoprefixer = require('gulp-autoprefixer');
 const clean = require('gulp-clean');
 const babel = require('gulp-babel');
+const revUrls = require('gulp-rev-urls');
 const rev = require('gulp-rev');
 const imagemin = require('gulp-imagemin');
 const runSequence = require('run-sequence');
@@ -62,6 +63,7 @@ gulp.task('js', function () {
 });
 
 gulp.task('js-build', function () {
+    var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/js/main.js')
         .pipe(babel({
             presets: ['es2015']
@@ -71,11 +73,16 @@ gulp.task('js-build', function () {
             debug: !gulp.env.production
         }))
         .pipe(uglify())
-        .pipe(RevAll.revision({
+        .pipe(revReplace({
+            manifest: manifest
         }))
+        .pipe(rev())
         .pipe(gulp.dest('./build/js'))
-        .pipe(RevAll.manifestFile())
-        .pipe(gulp.dest('./build'));
+        .pipe(rev.manifest({
+            base: './build',
+            merge: true
+        }))
+        .pipe(gulp.dest('./build'))
 });
 
 gulp.task('sass', function () {
@@ -87,14 +94,19 @@ gulp.task('sass', function () {
 });
 
 gulp.task('sass-build', function () {
+    var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/sass/main.scss')
         .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-        .pipe(autoprefixer())
-        .pipe(RevAll.revision({
+        .pipe(revReplace({
+            manifest: manifest
         }))
+        .pipe(rev())
         .pipe(gulp.dest('./build/css'))
-        .pipe(RevAll.manifestFile())
-        .pipe(gulp.dest('./build'));
+        .pipe(rev.manifest({
+            base: './build',
+            merge: true
+        }))
+        .pipe(gulp.dest('./build'))
 });
 
 gulp.task('pug', function () {
@@ -107,7 +119,7 @@ gulp.task('pug', function () {
 });
 
 gulp.task('pug-build', function () {
-    var manifest = gulp.src('./build/rev-manifest.json');
+    var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/pug/*.pug')
         .pipe(pug({
             pretty: true
@@ -138,14 +150,16 @@ gulp.task('images-build', function () {
             imagemin.optipng({optimizationLevel: 5}),
             imagemin.svgo({plugins: [{removeViewBox: true}]})
         ]))
-        .pipe(RevAll.revision({
-        }))
+        .pipe(rev())
         .pipe(gulp.dest('./build/images'))
-        .pipe(RevAll.manifestFile())
+        .pipe(rev.manifest({
+            base: './build',
+            merge: true
+        }))
         .pipe(gulp.dest('./build'));
 });
 
 gulp.task('dev', ['clean', 'sass', 'pug', 'server', 'watch']); 
 gulp.task('build', function () {
-    runSequence('clean', ['js-build', 'sass-build', 'images-build'], 'pug-build');
+    runSequence('clean', 'images-build', 'js-build', 'sass-build', 'pug-build');
 });
