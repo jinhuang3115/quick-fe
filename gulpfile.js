@@ -3,20 +3,20 @@
  */
 const gulp = require('gulp');
 const path = require('path');
-const watch = require('gulp-watch');
-const browserSync = require('browser-sync');
-const pug = require('gulp-pug');
-const sass = require('gulp-sass');
-const uglify = require('gulp-uglify');
-const revReplace = require("gulp-rev-replace");
-const concat = require('gulp-concat');
-const autoprefixer = require('gulp-autoprefixer');
-const clean = require('gulp-clean');
-const babel = require('gulp-babel');
-const rev = require('gulp-rev');
-const imagemin = require('gulp-imagemin');
-const runSequence = require('run-sequence');
-const browserify = require('gulp-browserify');
+const watch = require('gulp-watch'); //监听改变
+const browserSync = require('browser-sync'); //启动本地服务器，监听指定目录
+const pug = require('gulp-pug');//pug模版编译
+const sass = require('gulp-sass');//sass编译
+const uglify = require('gulp-uglify');//JS压缩
+const revReplace = require("gulp-rev-replace");//替换带指纹文件名
+const concat = require('gulp-concat'); //合并文件
+const autoprefixer = require('gulp-autoprefixer');//CSS添加前缀
+const clean = require('gulp-clean');//清空指定目录或文件
+const babel = require('gulp-babel');//babel编译
+const rev = require('gulp-rev');//静态文件添加指纹
+const imagemin = require('gulp-imagemin');//图片压缩
+const runSequence = require('run-sequence');//按顺序执行任务
+const browserify = require('gulp-browserify');//JS模块管理
 const webBrowserSync = browserSync.create('WebServer');
 const webConfig = {
     port: 3000,
@@ -25,40 +25,39 @@ const webConfig = {
     }
 };
 
-gulp.task('test', function () {
-    watch('./js/**', function () {
-        console.log(333);
-    })
-});
-
+//清空build目录
 gulp.task('clean', function () {
     return gulp.src('./build', {read: false})
         .pipe(clean());
 });
 
-
+//监听HTML，Sass，Js文件改变
 gulp.task('watch', function () {
     gulp.watch('./static/pug/**', ['pug']);
     gulp.watch('./static/sass/**', ['sass']);
     gulp.watch('./static/js/**', ['js']);
 });
+
+//启动本地服务
 gulp.task('server', function () {
     browserSync.init(webConfig);
 });
 
+//开发环境JS处理
 gulp.task('js', function () {
     return gulp.src('./static/js/main.js')
         .pipe(babel({
-            presets: ['es2015']
+            presets: ['es2015']  //es2015规范编译
         }))
         .pipe(browserify({
             insertGlobals: true,
             debug: !gulp.env.production
         }))
         .pipe(gulp.dest('./build/js'))
-        .pipe(browserSync.reload({stream: true}));
+        .pipe(browserSync.reload({stream: true})); //启动本地服务
 });
 
+//生产环境JS处理
 gulp.task('js-build', function () {
     var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/js/main.js')
@@ -68,30 +67,32 @@ gulp.task('js-build', function () {
         .pipe(browserify({
             insertGlobals: true,
             debug: !gulp.env.production
-        }))
-        .pipe(uglify())
+        })) 
+        .pipe(uglify()) //压缩JS文件
         .pipe(revReplace({
             manifest: manifest
-        }))
-        .pipe(rev())
+        })) //替换JS中带有指纹的静态文件目录
+        .pipe(rev())//js文件添加指纹
         .pipe(gulp.dest('./build/js'))
-        .pipe(rev.manifest({
+        .pipe(rev.manifest({  //生成指纹文件的manifest文件（map）
             base: './build',
             merge: true
         }))
         .pipe(gulp.dest('./build'))
 });
 
+//开发环境Sass处理
 gulp.task('sass', function () {
     return gulp.src('./static/sass/main.scss')
-        .pipe(sass().on('error', sass.logError))
-        .pipe(autoprefixer({
+        .pipe(sass().on('error', sass.logError)) //编译sass
+        .pipe(autoprefixer({ //自动添加前缀
             remove:true
         }))
         .pipe(gulp.dest('./build/css'))
         .pipe(browserSync.reload({stream: true}));
 });
 
+//生产环境sass处理
 gulp.task('sass-build', function () {
     var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/sass/main.scss')
@@ -111,6 +112,7 @@ gulp.task('sass-build', function () {
         .pipe(gulp.dest('./build'))
 });
 
+//开发环境pug文件处理
 gulp.task('pug', function () {
     return gulp.src('./static/pug/*.pug')
         .pipe(pug({
@@ -120,6 +122,7 @@ gulp.task('pug', function () {
         .pipe(browserSync.reload({stream: true}));
 });
 
+//生产环境pug文件处理
 gulp.task('pug-build', function () {
     var manifest = gulp.src('./rev-manifest.json');
     return gulp.src('./static/pug/*.pug')
@@ -132,6 +135,7 @@ gulp.task('pug-build', function () {
         .pipe(gulp.dest('./build'))
 });
 
+//开发环境图片处理
 gulp.task('images', function () {
     gulp.src('./static/images/**')
         .pipe(imagemin([
@@ -144,11 +148,12 @@ gulp.task('images', function () {
     
 });
 
+//生产环境图片处理
 gulp.task('images-build', function () {
     gulp.src('./static/images/**')
-        .pipe(imagemin([
+        .pipe(imagemin([  //图片压缩
             imagemin.gifsicle({interlaced: true}),
-            imagemin.jpegtran({progressive: true}),
+            imagemin.jpegtran({progressive: true}), 
             imagemin.optipng({optimizationLevel: 5}),
             imagemin.svgo({plugins: [{removeViewBox: true}]})
         ]))
@@ -161,7 +166,10 @@ gulp.task('images-build', function () {
         .pipe(gulp.dest('./build'));
 });
 
+//开发环境开发执行命令
 gulp.task('dev', ['clean', 'sass', 'pug', 'server', 'watch']); 
+
+//生产环境执行命令
 gulp.task('build', function () {
     runSequence('clean', 'images-build', 'js-build', 'sass-build', 'pug-build');
 });
