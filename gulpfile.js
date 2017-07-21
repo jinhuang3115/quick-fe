@@ -45,10 +45,7 @@ gulp.task('server', function () {
 
 //开发环境JS处理
 gulp.task('js', function () {
-    return gulp.src('./static/js/main.js')
-        .pipe(babel({
-            presets: ['es2015']  //es2015规范编译
-        }))
+    return gulp.src('./static/js/*.js')
         .pipe(browserify({
             insertGlobals: true,
             debug: !gulp.env.production
@@ -167,7 +164,7 @@ gulp.task('images-build', function () {
 });
 
 //开发环境开发执行命令
-gulp.task('dev', ['clean', 'sass', 'pug', 'server', 'watch']); 
+gulp.task('dev', ['sass', 'pug', 'js', 'server', 'watch']); 
 
 //生产环境执行命令
 gulp.task('build', function () {
